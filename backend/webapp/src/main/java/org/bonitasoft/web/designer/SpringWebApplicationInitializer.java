@@ -99,7 +99,7 @@ public class SpringWebApplicationInitializer implements WebApplicationInitialize
 
         // Register and map the dispatcher servlet
         // Useful for REST API calls in the preview using relative URLs ../API/ and absolute /bonita/API
-        registerProxy(servletContext, "bonitaAPIProxy", "/API/*", "/bonita/API", getPortalOrigin());
+        registerProxy(servletContext, "bonitaAPIProxy", "/API/*", "/engine-rest", getPortalOrigin());
         // Useful for Resources calls in the preview using absolute URLs /bonita
         registerProxy(servletContext, "bonitaPortalProxy", "/portal/*", "/bonita/portal", getPortalOrigin());
         registerProxy(servletContext, "bonitaPortalJSProxy", "/portal.js/*", "/bonita/portal.js", getPortalOrigin());
@@ -148,7 +148,7 @@ public class SpringWebApplicationInitializer implements WebApplicationInitialize
     }
 
     private String getPortalOrigin() {
-        String portalOrigin = System.getProperty(BONITA_PORTAL_ORIGIN);
+        String portalOrigin = prop.getProperty(BONITA_PORTAL_ORIGIN);
         if (StringUtils.isNotBlank(portalOrigin)) {
             return portalOrigin;
         }
