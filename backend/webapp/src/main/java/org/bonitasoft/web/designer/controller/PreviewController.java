@@ -73,7 +73,7 @@ public class PreviewController {
     /**
      * Send redirect to the Rest API
      */
-    @RequestMapping("/preview/{previewableType}/{appName}/API/**")
+    @RequestMapping({"/preview/{previewableType}/{appName}/API/**","/preview/{previewableType}/API/**"})
     public void proxyAPICall(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 
         try {
@@ -89,38 +89,40 @@ public class PreviewController {
         }
     }
 
-    @RequestMapping(value = "/preview/page/{appName}/{id}", produces = "text/html; charset=UTF-8")
+
+
+    @RequestMapping(value = {"/preview/page/{appName}/{id}", "/preview/page/{id}"}, produces = "text/html; charset=UTF-8")
     public ResponseEntity<String> previewPage(@PathVariable(value = "id") String id, HttpServletRequest httpServletRequest) {
         return previewer.render(id, pageRepository, httpServletRequest);
     }
 
-    @RequestMapping("/preview/page/{appName}/{id}/assets/**")
+    @RequestMapping({"/preview/page/{appName}/{id}/assets/**", "/preview/page/{id}/assets/**"})
     public void servePageAsset(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") String pageId) throws IOException {
         String matchingPath = RequestMappingUtils.extractPathWithinPattern(request);
         Path filePath = pageRepositoryPath.resolve(pageId).resolve("assets").resolve(matchingPath);
         HttpFile.writeFileInResponse(request, response, filePath);
     }
 
-    @RequestMapping("/preview/{previewableType}/{appName}/{id}/widgets/**")
+    @RequestMapping({"/preview/{previewableType}/{appName}/{id}/widgets/**","/preview/{previewableType}/{id}/widgets/**"})
     public void serveWidgetFiles(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String matchingPath = RequestMappingUtils.extractPathWithinPattern(request);
         HttpFile.writeFileInResponse(request, response, widgetRepositoryPath.resolve(matchingPath));
     }
 
-    @RequestMapping("/preview/page/{appName}/{id}/js/**")
+    @RequestMapping({"/preview/page/{appName}/{id}/js/**","/preview/page/{id}/js/**"})
     public void servePageJs(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") String pageId) throws IOException {
         String matchingPath = RequestMappingUtils.extractPathWithinPattern(request);
         Path filePath = pathResolver.getTmpPagesRepositoryPath().resolve(pageId).resolve(JS_FOLDER).resolve(matchingPath);
         HttpFile.writeFileInResponse(request, response, filePath);
     }
 
-    @RequestMapping(value = "/preview/fragment/{appName}/{id}", produces = "text/html; charset=UTF-8")
+    @RequestMapping(value = {"/preview/fragment/{appName}/{id}","/preview/fragment/{id}"}, produces = "text/html; charset=UTF-8")
     public ResponseEntity<String> previewFragment(@PathVariable(value = "id") String id, HttpServletRequest
             httpServletRequest) {
         return previewer.render(id, fragmentRepository, httpServletRequest);
     }
 
-    @RequestMapping("/preview/fragment/{appName}/{id}/widgets*")
+    @RequestMapping({"/preview/fragment/{appName}/{id}/widgets*","/preview/fragment/{id}/widgets*"})
     public void serveFragmentWidgets(HttpServletRequest request, HttpServletResponse response, @PathVariable("id")
             String id) throws IOException {
         String matchingPath = RequestMappingUtils.extractPathWithinPattern(request);
@@ -128,7 +130,7 @@ public class PreviewController {
         HttpFile.writeFileInResponse(request, response, filePath);
     }
 
-    @RequestMapping("/preview/page/{appName}/{id}/fragments/**")
+    @RequestMapping({"/preview/page/{appName}/{id}/fragments/**","/preview/page/{id}/fragments/**"})
     public void serveFragmentFiles(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String matchingPath = RequestMappingUtils.extractPathWithinPattern(request);
         HttpFile.writeFileInResponse(request, response, fragmentRepositoryPath.resolve(matchingPath));
@@ -138,27 +140,19 @@ public class PreviewController {
      * Send redirect to the Application theme resources if an application is selected
      * Else returns a default theme.css files.
      */
-    @RequestMapping("/preview/{previewableType}/{appName}/theme/**")
-    public void serveThemeResources(HttpServletRequest request, HttpServletResponse response, @PathVariable(value = "appName") String appName) throws ServletException {
+    @RequestMapping({"/preview/{previewableType}/theme/**", "/preview/{previewableType}/{appName}/theme/**"})
+    public void serveThemeResources(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         String matchingPath = RequestMappingUtils.extractPathWithinPattern(request);
-        if (!appName.equals("no-app-selected")) {
-            try {
-                response.sendRedirect(request.getContextPath() + "/apps/" + appName + "/theme/" + matchingPath);
-            } catch (IOException ie) {
-
-            }
-        } else if ("theme.css".equals(matchingPath)){
-            response.setHeader("Content-Type", "text/css");
-            response.setHeader("Content-Disposition", "inline; filename=\"theme.css\"");
-            response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
-            response.setStatus(HttpStatus.OK.value());
-            try (PrintWriter writer = response.getWriter()) {
-                writer.println("/**");
-                writer.println("* Living application theme");
-                writer.print("*/");
-            } catch (IOException e) {
-                // fail silently
-            }
+        response.setHeader("Content-Type", "text/css");
+        response.setHeader("Content-Disposition", "inline; filename=\"theme.css\"");
+        response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
+        response.setStatus(HttpStatus.OK.value());
+        try (PrintWriter writer = response.getWriter()) {
+            writer.println("/**");
+            writer.println("* Living application theme");
+            writer.print("*/");
+        } catch (IOException e) {
+            // fail silently
         }
     }
 
